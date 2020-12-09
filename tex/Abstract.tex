@@ -1,0 +1,15 @@
+
+
+%A key activitiy in software testing is determining the correctness of test executions, that is currently an expensive and error prone
+%manual activity.   
+The challenge of automatically determining the correctness of test executions is referred to as the \emph{test oracle problem} and is a
+key remaining issue for automated testing.
+The paper aims at solving the test oracle problem in a scalable and accurate way. 
+To achieve this, we use supervised learning over test execution traces. We label a small fraction of the execution traces with their verdict of pass or fail. 
+We use the labelled traces to train a neural network (NN) model to learn to distinguish runtime patterns for passing versus failing executions for a given program. 
+
+We evaluate our approach using case studies from different application domains - 1. Module from Ethereum Blockchain, 2. Module from PyTorch deep learning framework, 3. Microsoft SEAL encryption library components and 4. Sed stream editor. We found the classification models for all subject programs resulted in high precision, recall and specificity, averaging to 89\%, 88\% and 92\% respectively, while only training with an average 15\% of the total traces. Our experiments show that the proposed NN model is promising as a test oracle and is able to learn runtime patterns to distinguish test executions for systems and tests from different application domains. 
+
+%\begin{IEEEkeywords}
+%component, formatting, style, styling, insert
+%\end{IEEEkeywords}

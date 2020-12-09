@@ -1,0 +1,159 @@
+%\documentclass[10pt, conference]{IEEEtran}
+\documentclass[sigconf]{acmart}
+%\pdfoutput=1
+%\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+%\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{color}
+\usepackage{enumitem}
+\let\proof\relax
+\let\endproof\relax
+\usepackage{caption}
+\usepackage{subcaption} 
+%\captionsetup[table]{skip=10pt}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgfplots}
+\usepackage{color}
+\DeclareCaptionFormat{listing}{\colorbox{gray!50}{\parbox[l]{\columnwidth}{#1#2#3}}}
+%\captionsetup[lstlisting]{format=listing,labelfont=black,textfont=black, font={footnotesize,black}}
+
+\usepackage[]{algorithm2e}
+\usepackage{algorithmic}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\renewcommand{\algorithmicreturn}{\textbf{Algorithm:}}
+%\renewcommand{\baselinestretch}{0.915}
+
+%\graphicspath{{figures/}{./}}
+\newcommand{\ajitha}[1]{\textbf{\color{blue}AR:{#1}}}
+\newcommand{\foivos}[1]{\textbf{\color{blue}FT:{#1}}}
+\newcommand{\miltos}[1]{\textbf{\color{blue}MA:{#1}}}
+\newtheorem{ques}{Q}
+\newtheorem{common}{C}
+
+%TODOs
+\newcommand{\todov}[1]{{\par\noindent\small\color{red} \framebox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\textbf{TODO:} #1}}}}
+
+\lstset{language=C++,basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstset{frame=tb,framextopmargin=50pt,frame=bottomline}
+
+\begin{document}
+ 
+\copyrightyear{2021}
+\acmYear{2021}
+\setcopyright{acmlicensed}\acmConference[SAC '21]{The 36th ACM/SIGAPP
+	Symposium on Applied Computing}{March 22--26, 2021}{Virtual Event,
+	Republic of Korea}
+\acmBooktitle{The 36th ACM/SIGAPP Symposium on Applied Computing (SAC'21), March 22--26, 2021, Virtual Event, Republic of Korea}
+\acmPrice{15.00}
+\acmDOI{10.1145/3412841.3442027}
+\acmISBN{978-1-4503-8104-8/21/03}
+
+\title{Supervised Learning over Test Executions as a Test Oracle}\thanks{This work was supported by the Engineering and Physical Sciences Research Council (grant EP/L01503X/1), EPSRC Centre for Doctoral Training in Pervasive Parallelism at the University of Edinburgh, School of Informatics.}
+
+\author{Foivos Tsimpourlas}
+\email{F.Tsimpourlas@sms.ed.ac.uk}
+\affiliation{
+	\institution{University of Edinburgh}
+	\country{}
+}
+
+\author{Ajitha Rajan}
+\email{arajan@ed.ac.uk}
+\affiliation{
+	\institution{University of Edinburgh}
+	\country{}
+}
+
+\author{Miltiadis Allamanis}
+\email{miallama@microsoft.com}
+\affiliation{
+	\institution{Microsoft Research}
+	\country{}
+}
+
+
+\iffalse
+\author{\IEEEauthorblockN{Foivos Tsimpourlas}
+	\IEEEauthorblockA{\textit{University of Edinburgh} \\
+		F.Tsimpourlas@sms.ed.ac.uk}
+	\and
+	\IEEEauthorblockN{Ajitha Rajan}
+	\IEEEauthorblockA{\textit{University of Edinburgh} \\
+		arajan@ed.ac.uk}
+	\and
+	\IEEEauthorblockN{Miltiadis Allamanis}
+	\IEEEauthorblockA{\textit{Microsoft Research} \\
+		miallama@microsoft.com}
+}
+\fi
+
+%\maketitle
+
+
+%%%%
+%Include here the files for each chapter
+%%%%
+\begin{abstract}
+\input{Abstract}
+%This is the abstract
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+\input{Introduction}
+
+%\vspace{10pt} 
+ \section{Background}
+ \label{sec:background}
+\input{Background}
+
+%\section{Motivational Example}
+%\label{sec:example}
+%\input{Example}
+
+\section{Approach}
+ \label{sec:approach}
+\input{Approach}
+
+\section{Experiment}
+ \label{sec:experiment}
+\input{Experiments}
+
+ \section{Results and Analysis}
+ \label{sec:results}
+\input{Results}
+
+\vspace{-5pt}
+\section{Conclusion}
+\label{sec:future}
+\input{Future_work}
+
+%\section*{Acknowledgements}
+%\label{sec:acks}
+%\input{Acknowledgements}
+
+\vspace{-10pt}
+
+%Add references here
+\bibliographystyle{plain}
+%\bibliographystyle{ACM-Reference-Format}
+\bibliography{References}
+
+
+
+\end{document}

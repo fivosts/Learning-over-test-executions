@@ -1,0 +1,29 @@
+In this paper, we propose a novel approach for designing a test oracle as a NN model, learning from execution traces of a given program. 
+We have implemented an end to end framework for automating the steps in our approach, (1) Gathering execution traces as sequences of method invocations, (2) Encoding variable length execution traces into a fixed length vector, (3) Designing a NN model that uses the trace information to classify the trace as pass or fail. 
+%Our approach handles unbalanced test sets with unequal passing and failing traces by weighting the samples accordingly. 
+
+We evaluated the approach using 5 realistic PUTs and tests. We found the classification model for each PUT was effective in classifying passing and failing executions, achieving an average of 89\% precision, 88\% recall and 92\% specificity while only training with an average 15\% of the total traces. %Most subject programs use approximately 10\% of the traces for training to achieve maximum performance. 
+%For programs with a large number of traces, a lower proportion of traces was adequate for training. 
+We outperform the hierarchical clustering technique proposed in recent literature by a large margin of accuracy for 4 out of the 5 PUTs, and achieved comparable performance for the other PUT.
+
+\paragraph{Practical use} Our approach can be applied out of the box for classifying tests for any software that can be compiled to LLVM IR. We gather execution traces for test inputs automatically, and require a small fraction of the traces to be labelled with their pass or fail outcomes (average 15\% in our experiments). The remaining traces will then be classified automatically. Our approach is promising with high accuracy and has clear benefits over current industry practices where developers label \emph{all} the tests. Our future work will focus on methods to improve the classification accuracy while reducing the training data requirement using techniques like transfer learning. 
+
+%\textcolor{red}{\paragraph{Generalisation:}In this paper, we focus on designing a classification model for each subject program. We did an initial experiment with generalising a classification model learned over one protocol FSM to classify executions over other network protocol FSMs. The results for precision and recall over other unseen FSMs was not as high as the individual FSM classification models. In the future, we plan to explore techniques that will improve the generalisation performance of the NN models.} %Our future work will also involve exploring the use of CNNs and transformers in our NN model. 
+%In this paper, we primarily use LSTMs and MLP for designing the NN model. We plan to explore effectiveness of using other models, such as CNNs and transformers,  in our future work.  
+%We believe effort invested in labelling 10\% of the traces to automatically classify the remaining 90\% is 
+
+\iffalse
+\subsection{\textcolor{blue}{Criteria of Applicability}}
+
+\textcolor{blue}{
+	Our technique is general and can accept different traces from different methods. As all machine learning techniques our method
+	will make mistakes. As we will show in the evaluation section next, to apply our technique a dataset of passing and failing test
+	cases is needed. Furthermore, classifiers trained on one system do not transfer to other systems. Our experimental evidence
+	nevertheless suggest that for a broad range of baselines our system achieves good performance. However, we expect that program
+	traces that take rare paths of code to confuse our method (something that would also be expected from other machine learning
+	methods too). Therefore, for a practicioner to apply our tool, at this point, we suggest that its use is limited for tests that exercise the
+	core functionality of the program, rather than fringe aspects of the tested software.}
+
+\textcolor{red}{Delete below?}
+\textcolor{blue}{We provide criteria based on empirical evidence for the applicability of our technique in a real life use case. As in our experiments, a tester can only use the model to classify tests within the same unit or module. Our evidence suggest that precision, recall and true negative rate metrics are similar between the training and the test set for a given program. Traces from both training and test set, share control flow features, therefore we expect this similarity. We argue that new, unseen tests that exercise an unseen functionality,will still be classified with the same accuracy so long they exercise the same module used for training.}
+\fi

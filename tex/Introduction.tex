@@ -1,0 +1,89 @@
+
+As the scale and complexity of software increases, the number of tests needed for effective validation becomes extremely large, 
+slowing down development, hindering programmer productivity, and ultimately making development costly~\cite{ammann2016introduction}.
+To make testing faster, cheaper and more reliable, it is desirable to automate as much of the process as possible. 
+%The need for large numbers of tests is magnified in agile software development practices, 
+%like Continuous Integration (CI) and Test-Driven Development (TDD), that require extensive testing to be performed~\cite{humble2010continuous}.
+%Google using CI development for its products reports a need for running large numbers of tests every day (more than $100$ million tests per day)~\cite{kumar2010development}. 
+
+Over the past decades, researchers have
+made remarkable progress in automatically generating effective test inputs~\cite{chen2013orchestrated, bertolino2007software}. Automated test input generation tools, however, generate substantially more tests than manual approaches. This becomes an issue when determing the correctness of test executions, a procedure referred to as the \emph{test oracle}, that is still largely manual, relying on developer expertise.  Recent surveys on the test oracle problem~\cite{barr2015oracle, nardi2015survey, langdon2017inferring} show that automated oracles based on formal specifications, metamorphic relations~\cite{liu6613484} and independent program versions are not 
+widely applicable and difficult to use in practice. 
+In this paper, we seek to address the test oracle problem. More specifically, for a system with a large set of test inputs, that are automatically 
+%~\cite{Chung2009GeneratingID, Chung2004ASA, Huang6340123, lipka7302457} 
+and/or manually generated, we ask,  \\ 
+\emph{`` Is there a widely applicable technique that automates the classification of test executions as pass/fail ? ''}
+%One of the biggest hurdles in test automation is the \emph{test oracle} - ``a procedure that distinguishes between the correct and incorrect behaviours of the System Under Test (SUT)''~\cite{barr2015oracle}.  Literature refers to the challenge of automatically determining the correctness of test executions as the \emph{test oracle problem} and acknowledges it as one of the key  
+%remaining issues for automated testing~\cite{barr2015oracle}. 
+%Recent surveys on the test oracle problem~\cite{barr2015oracle, nardi2015survey, langdon2017inferring} 
+%show that existing techniques based on formal specifications, metamorphic relations and independent program versions are not 
+%widely applicable and difficult to use in practice. 
+%todov{Elaborate on limitations of existing oracles.}
+\begin{figure*}[h]
+	\centering
+	\includegraphics[scale=0.35]{../../figures/key_idea.png}
+	\vspace{-6pt}
+	\caption{Key idea in our approach.}
+%	\vspace{-20pt}
+	\label{fig:key-idea}
+	\vspace{-8pt}
+	%\Description[\texttt{Encoder 2} representing a sequence of trace lines and global state as a single vector.]
+\end{figure*}
+
+\textbf{Key Idea.}
+We explore supervised machine learning to infer a test oracle from labelled execution traces of a given system. %, using neural networks (NNs).
+%In particular, we use neural networks (NNs), well suited to learning complex functions, to design the test oracles. %tailored to each software, using neural networks that have been.  
+In particular, we use neural networks (NNs), well suited to learning complex functions and classifying patterns, to design the test oracles.
+Our technique is widely applicable and easy to use, as it only requires execution traces gathered from running tests through the program under test (PUT) to design the oracle. This is shown in Figure~\ref{fig:key-idea} where a small fraction of the gathered execution traces labelled with pass/fail (shown in light gray) is used to train the NN model which is then used to automatically classify the remaining unseen execution traces (colored dark gray). 
+
+Previous work exploring the use of NNs for test oracles has been in a restricted context -- applied to very small programs with primitive data types, and only considering their inputs and outputs~\cite{vanmali2002using, jin2008artificial}. Information in execution traces which we believe is useful for test oracles has not been considered by existing NN-based approaches.
+Other bodies of work in program analysis have used NNs
+%Recent work using NNs over programs 
+to predict method or variable names and detecting name-based bug patterns~\cite{alon2018code2vec, pradel2018deepbugs} relying on static program information, namely,  embeddings of the Abstract Syntax Tree (AST) or source code. %Automated generation of labelled data has also been overlooked. 
+Our proposed approach is the first attempt at using \emph{dynamic execution trace information in NN models for classifying test executions}.
+
+Our approach for inferring a test oracle has the following steps, 
+\begin{enumerate}[itemsep = 0pt, topsep = 0pt, partopsep=0pt]
+\item Instrument a program to gather execution traces as sequences of method invocations. %record method calls, arguments, and return values for every test execution, 
+\item Label a small fraction of the traces with their classification decision. %The labelled traces are used to train the NN model.
+\item Design a NN component that embeds the execution traces to fixed length vectors.
+\item Design a NN component that uses the line-by-line trace information to classify traces as pass or fail.
+\item Train a NN model that combines the above components and evaluate it on unseen execution traces for that program. 
+\end{enumerate}
+The novel contributions in this paper are in Steps 3, 4 and 5. Execution traces from a program vary widely in their length and information. We propose a technique to encode and summarise the information in a trace to a fixed length vector that can be handled by a NN. We then design and train a NN to serve as a test oracle.  
+%The novelty in our approach lies in using execution traces to train and build a NN model for test classification.  
+
+
+\textbf{Labelled execution traces.} Given a PUT and a test suite, we gather execution traces corresponding to each of the test inputs in the test suite with our instrumentation framework. Effectively learning a NN classifier for a PUT that distinguishes correct from incorrect executions requires labelled data with both passing and failing examples of traces. 
+We require a small fraction of the overall execution traces to be labelled, which is likely to be a manual process. 
+As a result, our proposed approach for test oracle is \emph{not} fully automated.
+%For example, 10\% of the test execution traces, the remaining 90\% of execution traces will be automatically classified by our approach. %In our experiments, we report the effect of training data size on verdict (passing or failing) prediction accuracy. 
+We hypothesize that the time invested in labelling a small proportion of the traces is justified with respect to the benefit gained in automatically classifying the remaining majority of traces. 
+In contrast, with no classifier, the developer would have had to specify expected output for all the tests, which is clearly more time consuming than the small proportion of tests we need labelled. 
+
+%Our technique is not fully automated as it relies on training with labelled traces, where labelling is likely to be a manual process. T
+%It is common for case studies to have many passing test inputs but only a limited number of failing tests. To address this imbalance in training, we mutate the reference code with common bugs. Test inputs are labelled as passing traces if their output matches the expected output. Otherwise, they are labelled as failing traces.
+
+
+% To address this imbalance in training, we generate failing traces by mutating the existing code with common bugs. Test inputs that were labelled with passing traces through the original code will be labelled with failing traces through the mutated code if the output deviates from the expected output. %from passing test inputs by mutating the source code. 
+
+
+\textbf{NN Architecture.} 
+An execution trace in our approach comprises multiple lines, with each line containing information on a method invocation. 
+Our architecture for encoding and classifying an execution trace uses multiple components: (1) Value encoder for encoding values within the trace line to a distributed vector representation, (2) Trace encoder encoding trace lines within a variable-length trace to a single vector, and (3) Trace Classifier that accepts the trace representation and classifies the trace. The components in our architecture is made up of LSTMs, one-hot encoders, and a multi-layer perceptron. 
+
+\textbf{Case Studies.} We evaluate our approach using 4 subject programs and tests from different application domains - a single module from Ethereum project~\cite{ethereum}, a module from Pytorch~\cite{pytorch}, one component within Microsoft SEAL encryption library~\cite{sealcrypto} and a Linux stream editor~\cite{sed}.  
+One of the 4 subject programs were accompanied by both passing and failing tests that we could directly use in our experiment. The remaining three programs were only accompanied by passing tests. We treated these programs as reference programs. We then generated PUTs by artificially seeding faults into them. We generated traces through the PUTs using the existing tests, labelling the traces as passing or failing based on comparisons with traces from the reference program.  We trained a NN model for each PUT using a fraction of the labelled traces. We found our approach for designing a NN classification model was effective for programs from different domains. We achieved high accuracies in detecting both failing and passing traces, with an average precision of 89\% and recall of 88\%. Only a small fraction of the overall traces (average 15\%) needed to be labelled for training the classification models.
+%For most subject programs, this fraction was 10\% of the total traces.  
+
+\noindent In summary, the paper makes the following contributions:
+\begin{itemize}[itemsep = 0pt, topsep = 0pt, partopsep=0pt]
+\item Given a PUT and its test inputs, we provide a framework that instruments the PUT and gathers test execution traces as sequences of method invocations. 
+\item A NN component for encoding variable-sized execution traces into fixed length vectors.
+\item A NN for classifying the execution traces as pass or fail.  
+\item We provide empirical evidence that this approach yields effective test oracles for programs and tests from different application domains. 
+\end{itemize}
+\vspace{-5pt}
+
+
+

@@ -1,0 +1,159 @@
+In our experiment, we evaluate the feasibility and accuracy of the NN architecture proposed in Section~\ref{sec:approach} to classify execution traces for 4 subject programs and their associated test suites.
+We investigate the following questions regarding feasibility and effectiveness:
+%\begin{description}[itemsep = 0pt, topsep = 0pt, partopsep=0pt]
+%\item[Q1. Precision, Recall and Specificity:] 
+%\textit{What is the precision, recall and specificity achieved over the subject programs? }
+%
+%To answer this question, we use our tool to instrument the source code to 
+%record execution traces as sequences of method invocations, arguments and return values. 
+%%\foivos{As the NN architecture have already been decided and we do not want to tune its hyperparameters, the data are not divided into a training, validation and testing set}. 
+%A small fraction of the  execution traces are labelled (\emph{training set}) and fed to our framework to infer a classification model. We then evaluate precision, recall and specificity achieved by the model over unseen execution traces (\emph{test set}) for that program. The test set includes both passing and failing test executions. We use \emph{Monte Carlo cross-validation}, creating random splits of the dataset into training and test data. We created 15 such random splits and averaged precision, recall and specificity computed over them. In our experiments, we do not use a validation set to tune the hyper-parameters in the NN model.  
+%%Additionally, we check if the inferred model can detect bug patterns in the test set that were unseen in the training set.  
+%%in include failing instances from some The unseen test executions include failing instances from common bug patterns in programs. 
+%%Instead, we divide them into a training and an evaluation set. We calculate the model's performance on the evaluation set.
+%
+%\item[Q2. Size of training set:] 
+%\textit{How does size of the training set affect precision and recall of the classification model?}
+%
+%For each program, we vary the size of training set from 5\% to 30\% of the overall execution traces and observe its effect on precision and recall achieved. 
+%
+%\item[Q3. Comparison against state of art:]
+%\textit{How does the precision, recall and specificity achieved by our technique compare against agglomerative hierarchical clustering, proposed by Almaghairbe et al.~\cite{almaghairbe2017separating} in 2017? }
+%
+%We choose to compare against the hierarchical clustering work as it is the most relevant and recent in classifying execution traces. Traces used in their work are sequences of method invocations, similar to our approach. Other test oracle work that use NNs is not used in the comparison as they do not work over execution traces, and are limited in their applicability to programs with numerical input and output which is not the case for programs in our experiment. 
+%\iffalse
+%\textcolor{red}{\item[Q4. Generalisation of classification model: ]
+%\textit{Can a classification model inferred from a program in a particular application domain be used to classify test executions over other programs in the same domain?}
+%\\
+%For the network protocol domain, we evaluate the accuracy of using a classification model inferred using traces from a single protocol detection finite state machine (FSM) for classifying test executions from other protocol FSMs. }
+%\fi
+%\end{description}
+
+
+\textbf{Q1. Precision, Recall and Specificity:} 
+\textit{What is the precision, recall and specificity achieved over the subject programs? }
+
+To answer this question, we use our tool to instrument the source code to 
+record execution traces as sequences of method invocations, arguments and return values. 
+%\foivos{As the NN architecture have already been decided and we do not want to tune its hyperparameters, the data are not divided into a training, validation and testing set}. 
+A small fraction of the  execution traces are labelled (\emph{training set}) and fed to our framework to infer a classification model. We then evaluate precision, recall and specificity achieved by the model over unseen execution traces (\emph{test set}) for that program. The test set includes both passing and failing test executions. We use \emph{Monte Carlo cross-validation}, creating random splits of the dataset into training and test data. We created 15 such random splits and averaged precision, recall and specificity computed over them. In our experiments, we do not use a validation set to tune the hyper-parameters in the NN model.  
+%Additionally, we check if the inferred model can detect bug patterns in the test set that were unseen in the training set.  
+%in include failing instances from some The unseen test executions include failing instances from common bug patterns in programs. 
+%Instead, we divide them into a training and an evaluation set. We calculate the model's performance on the evaluation set.
+
+\textbf{Q2. Size of training set:}
+\textit{How does size of the training set affect precision and recall of the classification model?}
+
+For each program, we vary the size of training set from 5\% to 30\% of the overall execution traces and observe its effect on precision and recall achieved. 
+
+\textbf{Q3. Comparison against state of art:}
+\textit{How does the precision, recall and specificity achieved by our technique compare against agglomerative hierarchical clustering, proposed by Almaghairbe et al.~\cite{almaghairbe2017separating} in 2017? }
+
+We choose to compare against the hierarchical clustering work as it is the most relevant and recent in classifying execution traces. Traces used in their work are sequences of method invocations, similar to our approach. Other test oracle work that use NNs is not used in the comparison as they do not work over execution traces, and are limited in their applicability to programs with numerical input and output which is not the case for programs in our experiment. 
+
+
+All experiments are performed on a single machine with 4 Intel i5-6500 CPU cores, Nvidia RTX 2060 GPU, 16GB of memory. %No dedicated GPU was used to any part of the experiment (instrumentation, training or testing).
+
+
+\subsection{Labelling Traces}
+\label{sec:labelling-traces}
+%We chose subject programs from different domains to assess applicability of our approach, namely from the blockchain, deep learning, encryption and text editing domains. 
+All our subject programs are open source, and most of them were only accompanied by passing tests. This is not uncommmon as most released versions of programs are correct for the given tests. We take these correct programs to be reference implementations. To enable evaluation of our approach that distinguishes correct versus incorrect executions, we need subject programs with bugs. We, therefore, generate PUTs by automatically mutating the reference implementation using common mutation operators~\cite{jia2011analysis} listed below, 
+\begin{enumerate}[itemsep = 0pt, topsep = 0pt, partopsep=0pt]
+	\item {Arithmetic operator replacement applied to \{$+, -, *, /,\\ --, ++$\}.}
+	\item {Logical connector replacement applied to \{$\&\&, ||, !$\}.}
+	\item {Bitwise operator replacement applied to \{$\&, |, \wedge, ~, <<, >>$\}.}	\item {Assignment operator replacement applied to \\ \{$+=, -=, *=, /=, \%=, <<=, >>=, \&=, |=, \wedge=$\}.}
+\end{enumerate}
+\begin{figure}[ht!]
+	\vspace{-12pt}	
+	\centering
+	\includegraphics[scale=0.3]{../../figures/mutation.png}
+	\caption{Labelling test executions by matching actual and expected behavior.}
+	%\vspace{-20pt}
+	\label{fig:labelling}
+	\vspace{-10pt}
+	%\Description[\texttt{Encoder 2} representing a sequence of trace lines and global state as a single vector.]
+\end{figure}
+A PUT is generated by seeding a single fault into the reference implementation at a random location using one of the above mutation operators. 
+We used an independent open source mutation tool\footnote{\url{https://github.com/chao-peng/mutec}} to generate PUTs from a given reference program. 
+Figure~\ref{fig:labelling} shows a PUT generated by seeding a single fault into a reference program.
+As seen in Figure~\ref{fig:labelling}, we run each test, $T_i$, in the test suite, through both the reference program and PUT, and label the trace as \emph{passing} if the expected output, $EO_i$, from the reference matches the actual output, $AO_i$, from the PUT. If they do not match, the trace is labelled as \emph{failing}.  
+We rejected PUTs from mutations that did not result in any failing traces (outputs always match with the reference). This avoids the problem of equivalent mutants. 
+All the PUTs in our experiment had both passing and failing traces. 
+%To generate failing tests, we keep the original program as a reference for the expected outputs and we use common bugs to mutate it, as shown in figure~\ref{fig:labelling}. The mutated program is the SUT. If a test's output deviates from the expected output, it is labelled as failing, otherwise passing. We gather all execution traces by running all tests through the SUT.
+%We apply the following mutations representing some common bug patterns~\cite{jia2011analysis, pradel2018deepbugs}: %that are most applicable to the code structure and syntax for the subject programs in our experiment:
+%To avoid data leakage in our experiment, we ensure that expected output is removed from the traces. We also remove exceptions, assertions and any other information in the program or test code that may act as a test oracle. 
+
+\subsection{Subject Programs}
+\label{sec:subj-programs}
+We chose subject programs from different domains to assess applicability of our approach, namely from the blockchain, deep learning, encryption and text editing domains. A description of the programs and associated tests is as follows. \\
+\noindent\textbf{1. Ethereum}~\cite{ethereum} is an open-source platform based on blockchain technology, which supports smart contracts. Within it, we evaluate our approach over the \texttt{Difficulty} module that calculates the mining difficulty of a block, in relation to different versions (eras) of the cryptocurrency (Byzantium, Homestead, Constantinople etc.). The calculation is based on five fields of an \texttt{Ethereum} block, specified in the test input. 
+
+\paragraph{Tests}
+
+We use the default test inputs provided by Ethereum's master test suite for the \texttt{Difficulty} module. We test this module for the Byzantium era of the cryptocurrency (version 3.0). The test suite contains 2254 \emph{automatically} generated test inputs. Each test input contains one hex field for the test input of the difficulty formula and another hex field for the expected output of the program. All the test inputs provided with the module are passing tests with the actual output equal to the expected output. As a result, we use the provided module as a reference implementation. As described in Section~\ref{sec:labelling-traces}, we seed faults into the reference implementation to generate PUTs, each containing a single mutation. For the difficulty module, we generate 2 PUTs -- 1. Ethereum-SE with a seeded fault in the core functionality of the difficulty module, and 2. Ethereum-CD  with a fault seeded in one of the functions that is external to the core function but appears in the call graph of the module.  The balance between passing and failing tests varies between the two PUTs, Ethereum-CD being perfectly balanced and Ethereum-SE being slightly imbalanced (828 failing and 1426 passing tests). %Finally, expected outputs and assertions are removed from the traces, so that there is no existing test oracle information. It is worth noting that for all our subject programs, we systematically remove all forms of test oracle information (expected output, assertions, exception, etc.) prior to applying our approach. 
+\iffalse
+by mutating passing test inputs and checking if they cause the actual output to differ from the expected output. Inputs and code mutations that result in the actual and expected output to differ are used as failing traces.  We apply the following common types of mutations~\cite{jia2011analysis, pradel2018deepbugs} that are most applicable to the module code structure and syntax: 
+\begin{enumerate}
+	\item Logical connector replacement applied to \{$\&\&, ||, !$\}.
+	\item Relational operator replacement applied to \\ \{$<, > , ==, <=, >=, !=$\}.
+	\item Argument swapping in function calls.
+	\item Scalar variable replacement.
+	\item Loop boundary value replacement.
+\end{enumerate}
+In the experiments that evaluate the classification model, we ensure that the expected output is removed from the traces, along with any information and assertions in the code that compare it with the actual output.  
+\fi
+
+ 
+\noindent\textbf{2. Pytorch}~\cite{pytorch} is an optimized tensor library for deep learning, widely used in research. In our experiment, we evaluate our model over the \texttt{intrusive\_ptr} class, which implements a pointer type with an embedded reference count.
+We chose this class because it had a sizeable number of tests (other modules had $<20$ published tests). 
+
+\paragraph{Tests}
+Implementation of the class is accompanied by 638 tests, all of which are passing. We, thus, use this as the reference implementation.  %{Each test checks for multiple assertions. We unroll each assertion to a single test to separate the test cases and increase the size of our samples. We end up with 638 passing tests.} 
+As with \texttt{Ethereum}, we apply mutations to the \texttt{intrusive\_ptr} implementation to generate a single PUT. Upon comparison with the reference,  318 of the existing tests are labelled passing through the PUT and 320 as failing.  %We remove assertions from the test inputs to ensure that no bias is introduced to the training of our model.
+
+\noindent\textbf{3. Microsoft SEAL}~\cite{sealcrypto} is an open-source encryption library. In our experiment, we study one component within Microsoft SEAL, the \texttt{Encryptor} module, which is accompanied by tests. This component is responsible for performing data encryption.
+
+%\paragraph{NN Architecture} 
+
+\paragraph{Tests}
+The \texttt{Encryptor} component is accompanied by 133 tests. %{, each containing a large number of assertions. We split the assertions to one test each and end up with 133 tests. These tests cover a set of \texttt{Encryptor's} functions and therefore they can be grouped in groups with respect to the function that they test. This observation is important to know once a single mutation breaks the functionality of one or more specific functions}.
+%, we applied the samesplitting of large test cases into a large set of smaller ones that test the encryptor class, ending up with 48 cases. 
+The provided tests were all passing tests, with matching expected and actual output. 
+As with previous programs, we generate a PUT by mutating the original implementation. On the PUT, 11 tests fail and 122 pass. %passing and failing traces using code mutations. {Using the mutation framework, we get three mutated versions. For all three, 11 tests fail and 122 pass. We observe that the 11 failing tests exercise the same function, each with different parameters. This function was broken by the introduced mutation. } %We ensure expected outputs and test oracle information were removed before we applied our approach. 
+
+%We ensure the execution traces for both components do not contain expected outputs. \foivos{Data leakage hint here as well}
+%To generate failing traces, we apply traditional classes of mutation operators (discussed in Section~\ref{sec:labelled-traces}) to the \texttt{Biguint} and \texttt{Encryptor} components. We then execute the provided tests with the mutated code to generate failing traces. % where the actual output differs from the expected output. Comparison with the expected output is only used for labelling the traces used in training.
+
+
+\noindent\textbf{4. Sed}~\cite{sed} is a Linux stream editor that performs text transformations on an input stream.
+\paragraph{Tests}
+We use the fifth version of \texttt{Sed} available in the SIR repository~\cite{sir}. This version is accompanied by 370 tests, of which 352 are passing and 18 are failing. The failing tests  point to real faults in this version. Since the implementation was accompanied by both passing and failing, we used it as the PUT. We did \emph{not} seed faults to generate the PUT. 
+
+\paragraph{Checks to avoid data leakage}
+%\foivos{Maybe remove data leakage explanation from either/both 4.1-end and 4.1-Ethereum-end ?}
+We ensure no test oracle data is leaked into traces. We remove expected outputs, assertions, exceptions, test names and any other information that may act directly or indirectly as a test oracle. For example, Ethereum uses \texttt{BOOST} testing framework to deploy its unit tests. We remove expected outputs and assertions in the test code that compare actual with the expected output e.g. \texttt{BOOST\_CHECK\_EQUAL}. %For all the execution traces used in our evaluation, we ensure that it is not possible to trivially classify it as pass or fail by simply observing the test output or execution trace. 
+
+For PUTs generated by seeding faults into the reference implementation, we only use one PUT for each reference implementation except in the case of Ethereum where we generated two PUTs, since faults were seeded in different files. Generating more PUTs for each reference implementation would be easy to do. However, we found our results across PUTs for a given reference program only varied slightly. As a result, we only report results over one to two PUTs for each reference implementation. 
+
+\subsection{Performance Measurement}
+For each PUT, we evaluate performance of the classification model over unseen execution traces. As mentioned in Section~\ref{sec:NN-model}, we use positive labels for failing traces and negative labels for passing. We measure 
+\begin{enumerate}
+ \item \emph{Precision} as the ratio of number of traces correctly classified as ``fail'' (\texttt{TP}) 
+to the total number of traces labelled as ``fail'' by the model (\texttt{TP + FP}). 
+ \item \emph{Recall} as the ratio of failing traces that were correctly identified  (\texttt{TP/(TP + FN)}). 
+ \item \emph{Specificity} or true negative rate (TNR) as the ratio of passing traces that were correctly identified (\texttt{TN /(TN + FP)}).
+\end{enumerate}
+\texttt{TP, FP, TN, FN } represent true positive, false positive, true negative and false negative, respectively.  
+
+\subsection{Hierarchical Clustering}
+In research question 3 in our experiment, we compare the classification accuracy of our approach against agglomerative hierarchical clustering proposed by Almaghairbe et al.~\cite{almaghairbe2017separating}. Their technique also considers execution traces as sequences of method calls, but only encoding callee names. Caller names, return values and arguments are discarded. We attempted to add the discarded information, but found the technique was unable to scale to large number of traces due to both memory limitations and a time complexity of $\mathcal{O}(n^3)$ where \texttt{n} is the number of traces. For setting clustering parameters for each subject program, we evaluate different types of linkage (\texttt{single}, \texttt{average}, \texttt{complete}) and a range of different cluster counts (as a percentage of the total number of tests): 1, 5, 10, 20 and 25\%. We use Euclidean distance as the distance measure for clustering. For each program, we report the best clustering results achieved over all parameter settings. 
+
+\iffalse
+We attempted to extend their clustering technique by encoding further information other than callee names (e.g. arguments). However, hierarchical Agglomerative clustering algorithm has a time and space complexity of $\mathcal{O}(n^3)$ and $\mathcal{O}(n^2)$ respectively, where \texttt{n} is the number of execution traces. As a result, increasing the dimensionality of data points, by encoding more features, is constrained by the amount of available physical memory. In the majority of our subject programs, this increase is not sustainable. Also, we found it difficult to scale this technique to complex programs (e.g. \texttt{Ethereum}) with lengthy function call sequences, due to a steep increase in the execution time of the algorithm. }
+\fi
+%To evaluate the effectiveness of the inferred test oracles for each program, we conduct two sets of experiments. First, using the existing test set for each program, we report precision and recall when classifying unseen test executions. The assert statements and oracle checks in the validation test set were removed. 
+%In the second experiment, we artificially create bugs based on common bug patterns, and evaluate the effectiveness of the inferred test oracle in classifying test executions through the buggy programs. 
+
+
+

@@ -1,0 +1,151 @@
+When a test oracle observes a test execution, it returns a
+test verdict, which is either pass or fail, depending on whether the observations match 
+expected behaviour. A test execution is execution of the PUT with a test input. The importance of oracles as an integral part of the testing process has been a key topic of research for over three decades. 
+We distinguish four different kinds of test oracles,
+based on the survey by Barr et al.~in 2015~\cite{barr2015oracle}. The most common form of test oracle is a \emph{specified oracle},
+one that judges behavioural aspects of the system under test
+with respect to formal specifications. Although formal specifications are effective in identifying failures,  
+defining and maintaining such specifications is expensive
+and also relatively rare in practice.
+\emph{Implicit} test oracles require no domain knowledge and 
+are easy to obtain at no cost. However, they are
+limited in their scope as they are only able to reveal  particular anomalies like buffer overflows, segmentation faults, deadlocks. 
+\emph{Derived} test oracles use 
+documentations or system executions, to judge a system's behaviour,
+when specified test oracles are unavailable. 
+However, derived test oracles, like metamorphic relations and inferring invariants, is either not automated  
+or it is inaccurate and irrelevant making it challenging to use.
+
+For many systems and much of
+testing as currently practised in industry, the
+tester does not have the luxury of formal specifications or assertions or even automated partial
+oracles~\cite{hierons2009verdict, hierons2012oracles}. %The tester must therefore
+%face the potentially daunting task of manually
+%checking the system’s behaviour for all test
+%cases generated. 
+Statistical analysis and machine learning techniques provide a useful alternative for understanding software behaviour using data 
+gathered from a large set of test executions.
+%We plan to use neural networks (NNs), well suited to learning complex functions, to design the test oracles. %tailored to each software, using neural networks that have been.  
+%We believe NNs would be a good fit as it can help learn to identify high-level features of the program state 
+%that indicate correct versus incorrect test executions. 
+%There has been some work exploring the use of NNs, in a restricted context, for correctness checks. 
+
+\subsection{Machine Learning for Software Testing}
+Briand et al.~\cite{briand2008novel}, in $2008$, presented a comprehensive overview of existing techniques that apply machine learning for addressing testing challenges.
+Among these, the closest related work is that of
+Bowring et al.\ in $2004$~\cite{bowring2004active}. They proposed an active learning approach to
+build a classifier of program behaviours using a frequency profile of single events in the
+execution trace. %They learn two sets of first-order Markov models,
+%where each set characterizes correct and incorrect behaviors separately. 
+%Their approach is only applicable if event transition profiles produced by a program can be encoded as a Markov model. 
+Evaluation of their approach was conducted over one small program whose specific structure was well suited to their technique. 
+%Their technique for building markov models wiill not scale to programs with large number of states. 
+%applying this technique over programs with large numbers of states is not clear and the authors only  evaluated their techover a single small program.
+Machine learning techniques have also been used in fault detection. 
+Brun and Ernst, in $2004$~\cite{brun04finding}, explored the use of support vector machines and decision trees to rank program properties, provided by the user,  that are likely to indicate 
+errors in the program. Podgurski et al., in $2003$~\cite{podgurski2003automated},
+%use cluster analysis techniques on passing and failing execution profiles to help debugging. 
+use clustering
+over function call profiles to determine which failure reports
+are likely to be manifestations of an underlying error. A training step determines which features are of interest
+by evaluating those that enable a model to distinguish
+failures from non-failures. The technique does not
+consider passing runs. In their experiments, most
+clusters contain failures resulting from
+a single error.
+%Engler et al., in $2001$~\cite{engler01bugs}, used statistical ranking to 
+%automatically extract programmer beliefs from source code and flag belief contradictions as errors. 
+%The goal of their work is different from ours in that they focus on error detection. They propose techniques to infer properties of programs that are likely to lead to errors 
+%so that the programmer only needs to examine those propoerties to locate an error. 
+
+More recently, Almaghairbe et al.~\cite{almaghairbe2017separating} proposed an unsupervised learning technique to classify unlabelled execution traces of simple programs. They gather two kinds of execution traces, one with only inputs and outputs, and another that includes the sequence of method entry and exit points, with only method names. Arguments and return values are not used. %over three different subject programs. They evaluated their technique on two types of traces, the first including traces that contain only the input and output of a program, while the second included state invariants as well. Then, clustering was used to organize the traces into clusters, using a set of different algorithms. 
+They use agglomerative hierarchical clustering algorithms to build an automated test oracle, assuming passing traces are grouped into large, dense clusters and failing traces into many small clusters. They evaluate their technique on 3 programs from the SIR repository~\cite{sir}. The proposed approach has several limitations. They only support programs with strings as inputs. 
+They do not consider correct classification of passing traces.
+The accuracy achieved by the technique is not high, classifying approximately 60\% of the failures. Additionally, fraction of outputs that need to be examined by the developer is around 40\% of the total tests, which is considerably higher than the labelled data used in our approach. 
+%In Section~\ref{sec:resuls}, we present 
+We objectively compared the accuracy achieved by the hierarchical clustering technique against our approach using 5 PUTs, discussed in Section~\ref{sec:results}. We found our approach achieves significantly higher accuracy in classifying program executions across all case studies. 
+%Number of clusters and threshold cluster size for failure clusters needs to be empirically determined for each program. 
+
+\iffalse
+Almaghairbe et al. assumed that all the passing traces present the same behaviour, leading to them being organized in one, large cluster. On the other hand, according to them, failing traces tend to present non-uniform, wide-ranging patterns, which results in failing traces being spread among many small clusters. According to their methodology, the clusters that are sized below the average of the set, are considered to contain failing traces and clusters sized above the average are considered to contain passing traces. For their evaluation, they used different clustering techniques and experimented on multiple cluster sizes. Almaghairbe et al. used `Daikon' for instrumentation, an invariant detector that uses machine learning to observe program values and summarize them into a set of formulas.
+
+\foivos{I am writing their weaknesses in items and then we will place them into the text.}
+
+\textcolor{blue}{Almaghairbe et al. weaknesses:
+\begin{enumerate}
+	\item They assume that small failing traces present diverging features, which is not always true. They also assume that passing traces have the same pattern, which is also most of the times wrong.
+	\item Their technique is based on programs that actually give an output. Not only that, but as they state at the end of the paper, ``the input/output pairs of the subject programs were string data". Their methodology is not applicable to programs with different data types other than strings, or to programs that only differ in their internal states and do not give a visible output to the user.
+	\item They only evaluate on 3 use cases and their precision numbers in almost every case is nowhere near good to be used on a real scenario. To get good precision numbers they combine clustering techniques, linkage types, clustering sizes, multiple versions for the same program. So many combinations and still it seems to underperform.
+	\item Their instrumentation is language specific. They used C and Java. Daikon (the instrumentation tool) only supports C, Java, Lisp, Javascript. LLVM is language agnostic.
+	\item Daikon by itself is inaccurate (as they state at the faq of its page, it suffers from false negatives due to having a simple grammar).
+	\item Their clustering works by grouping a limited number of categorical outputs (different strings). What if their outputs were numerical ?
+	\item There are 2-3 cases in which they present 100\% precision and 1 F1 score. This happened because apparently one of the many clustering combinations they used for the program, grouped only the passing traces into one large cluster and only the failing traces into many small clusters. But this was just an exception to the normal case. Their technique is not applicable to a real life scenario: if they were to classify NanoXML without knowing the label of the traces (this is what the paper claims) which technique would they use, when only one works out of so many ?
+\end{enumerate}}
+
+\foivos{End}
+\fi
+
+%, Bug detection work by Pradel and Sen} 
+%Fault detection in these techniques is applied once the tester knows an execution has failed. The goal in our work is to provide the tester with this knowledge of failing executions. 
+%Detecting faults in programs that cause test failures is different, but complementary to our goal of classifying test executions. 
+Existing work using execution traces for bug detection has primarily been based on clustering techniques. Neural networks, especially with deep learning, have been very successful for complex classification problems in other domains like natural language processing, speech recognition, computer vision. There is limited work exploring their benefits for software testing problems.  
+
+
+\paragraph{Neural Networks for Test Oracles} 
+NNs were first used by Vanmali et al.~\cite{vanmali2002using} in 2002 to simulate behaviour of simple programs
+using their previous version, and applied this model to regression testing of unchanged functionalities. 
+Aggarwal et al.~\cite{aggarwal2004neural} and Jin et al.~\cite{jin2008artificial} applied the same approach to test a triangle classification program, that computes the relationship among three edge inputs to determine the type of triangle. 
+The few existing approaches using NNs have been applied to simple programs having small I/O domains.
+The following challenges have not been addressed in existing work, \\ 
+%\begin{enumerate}
+ \noindent 1. Training with test execution data and their vector representation -- Existing work only considers program inputs and outputs that are of primitive data types (integers, doubles, characters). %Complex input/output data types and program paths and states taken during execution have not been previously explored. 
+ Test data for real programs often use complex data structures and data types defined in libraries. There is a need for techniques that encode such data. In addition, existing work has not attempted to use program execution information in NNs to classify tests.  Achieving this will require novel techniques for encoding execution traces and designing a NN that can learn from them.    \\
+ %Techniques for encoding intermediate states during program execution has not been considered previously. 
+ \noindent 2. Test oracles for industrial case studies - Realistic programs with complex behaviours and input data structures has not been previously explored. \\
+ \noindent 3. Effort for generating labelled training data - Training data in existing work has been over simple programs, like the triangle classification program, where labelling the tests was straightforward. Availability of labelled data that includes failing tests has not been previously discussed. Additionally, the proportion of labelled data needed for training and its effect on model prediction accuracy has not been systematically explored. 
+
+ \paragraph{Deep Learning for Software Testing}
+ The performance of neural networks as classifiers was boosted with the birth of deep learning in 2006~\cite{hinton2006fast}.
+ Deep learning methods have \emph{not} been explored extensively for software testing, and in particular for the test oracle problem.
+ Recently, a few techniques have been proposed for automatic pattern-based bug detection. For example, 
+ Pradel et al.~\cite{pradel2018deepbugs} proposed a deep learning-based static analysis for automatic name-based bug detection and
+ Allamanis et al.~\cite{allamanis2018learning} used graph-based neural static analysis for detecting variable misuse bugs. 
+In addition to these techniques, several other deep learning methods for statically representing code have been developed~\cite{alon2018code2seq,allamanis16convattn}. 
+We do not discuss these further since we are interested in execution trace classification and in NNs that use dynamic trace information rather than a static view of the code.
+
+ \iffalse
+ %%%%Deep Learning to find bugs%%%%%%%%%%55
+They present an approach for automatic bug detection using neural networks that are trained to distinguish buggy from non-buggy code. 
+ To generate large numbers of positive and negative training samples, 
+code transformations are used to create incorrect code from existing code samples. 
+Input to the NN is a translation of code as a vector. Vector representation of code
+is based on the AST and uses a distributed embedding for identifiers where its context is the surrounding nodes in the AST - parent, grand parent, siblings, uncles, cousins. 
+Each value in the context is a string value that represents the identifier name or literal name of that node. Vector representation of node is its one hot encoding. 
+For the context, it's vector representation is a concatenation of its component vectors that are one hot encodings if it is a string and single element if it is position.  
+Based on the vector representation of code, 
+a bug detector is a model that distinguishes
+between vectors that correspond to correct and incorrect code examples.
+The authors create four bug detectors for JavaScript - accidentally swapped function arguments, incorrect assignments, and incorrect binary operations.
+\fi
+ 
+ %
+ % Different NN architectures, their parameters,  and how to select them based on the program and test data 
+% characteristics is not well understood and remains unexplored. \\
+% \noindent 1. Labelling test data - the training samples in existing work has been provided by domain experts with knowledge of expected output 
+% or the program was simple enough like the triangle classification program that labelling the tests was straightforward. 
+% The challenge in obtaining labelled training samples without relying on a human oracle for complex applications has not been addressed.  \\
+%\noindent 2. Generating large numbers of training samples - Automated generation of large numbers of labelled test data and their representation for training %the NN has not been explored systematically. \\
+ 
+%\end{enumerate}
+
+\paragraph{Embedding Execution Traces for Neural Networks}
+%\ajitha{Discuss the following} -  Simple NN model over execution traces, \\
+%Recent learning-based approaches proposed for bug detection~\cite{} rely on using vector representations of program ASTs. There is limited work in using representations of execution traces.   
+One of the main contributions in this paper is an approach for embedding information in execution traces as a fixed length vector to be fed into the neural network. There is limited work in using representations of execution traces. Wang et al.~\cite{wang2017dynamic} proposed embeddings of execution traces in 2017. They use execution traces captured as a sequence of variable values at different program points. A program point is when a variable gets updated. Their approach uses recurrent NNs to summarise the information in the execution trace. Embedding of the traces is applied to an existing program repair tool. The work presented by Wang et al. has several limitations - 1. Capturing execution traces as sequences of updates to every variable in the program has an extremely high overhead and will not scale to large programs. The paper does not describe how the execution traces are captured, they simply assume they have them. 2. The approach does not discuss how variables of complex data types such as structs, arrays, pointers, objects are encoded. It is not clear if the traces only capture updates to user-defined variables, or if system variables are also taken into account. 
+%Information from system variables can be important in detecting bugs but is also accompanied by a high overhead in tracking them. 
+3. The evaluation uses three simple, small  programs (eg. counting parentheses in a string) from students in an introductory programming course. %, generating digits in an integer, printing the chessboard pattern using ``X'' and ``O'' to represent the squares. 
+The complexity and scale of real programs is not assessed in their experiments. Their technique for capturing and directly embedding traces as sequences of updates to every variable is infeasible in real programs. 
+Our approach captures and embeds traces as sequences of method invocations and updates to global variables, which scales better than tracking every program variable. We have implemented our instrumentation in the LLVM compiler framework that is language agnostic and scales to industry-sized programs. We support all types of variables and objects, including system defined variables. %Our embedding technique for traces is completely different from Wang et al.~\cite{wang2017dynamic} as it encodes sequences of method invocations and global state. Our experiments show feasibility of our technique over large, real programs. 
+%  https://rishabhmit.bitbucket.io/papers/dyn_iclr18.pdf
+%  Neural network representations of LLVM use-def graphs}
+%  https://papers.nips.cc/paper/7617-neural-code-comprehension-a-learnable-representation-of-code-semantics.pdf
