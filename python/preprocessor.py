@@ -24,6 +24,7 @@ class preprocessor:
 																								one_hot_vec = 32,
 																								start_size = 0,
 																								end_size = 0,
+                                                no_less_than = 0,
 																								keep_only_argret = False,
 																								excluded_keywords = [],
 																								trace_reduce = True,
@@ -47,7 +48,7 @@ class preprocessor:
 				post_call_key = ["", ""]
 			elif len(post_call_key) != 2:
 				assert False, "Wrong length of postorder function call conversion keyword inserted"
-			trace_list = this.trace_reduction(trace_list, trace_name, below_keyword, keep_only_argret, excluded_keywords, post_call_key, start_size, end_size, preprocess_roper)
+			trace_list = this.trace_reduction(trace_list, trace_name, below_keyword, keep_only_argret, excluded_keywords, post_call_key, start_size, end_size, no_less_than, preprocess_roper)
 		else:
 			if preprocess_roper == True:
 				trace_list = this.reduce_traces_keep_callees(trace_list, trace_name)
@@ -57,13 +58,14 @@ class preprocessor:
 
 		return
 
-	def trace_reduction(this, trace_list, trace_name, below_keyword, keep_only_argret, excluded_keywords, post_call_key, start_size, end_size, preprocess_roper):
+	def trace_reduction(this, trace_list, trace_name, below_keyword, keep_only_argret, excluded_keywords, post_call_key, start_size, end_size, no_less_than, preprocess_roper):
 
 		trace_list = this.reduce_traces_below_keyword(trace_list, below_keyword, trace_name)
 		trace_list = this.reduce_traces_keep_argret(trace_list, trace_name, keep_only_argret)
 		trace_list = this.reduce_traces_exclude_keyword(trace_list, excluded_keywords)
 		trace_list = this.reduce_traces_convert_postorder(trace_list, trace_name, post_call_key[0], post_call_key[1])
 		trace_list = this.reduce_traces_keep_front_back(trace_list, start_size, end_size)
+    trace_list = this.reduced_traces_no_less_than(trace_list, no_less_than)
 
 		if preprocess_roper == True:
 			trace_list = this.reduce_traces_keep_callees(trace_list, trace_name)
@@ -249,6 +251,11 @@ class preprocessor:
 				else:
 					continue 
 		return trace_list
+
+  def reduced_traces_no_less_than(this, trace_list, no_less_than):
+    if no_less_than == 0:
+      return trace_list
+    return {cat: [t for t in tlist if len(t) > no_less_than] for cat, tlist in trace_list.items()}
 
 	# Reducing function for roper's methodology
 	def reduce_traces_keep_callees(this, trace_list, trace_name):
